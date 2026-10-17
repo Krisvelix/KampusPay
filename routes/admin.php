@@ -12,4 +12,6 @@ Route::middleware(['auth', 'active', 'role:admin'])
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])
             ->name('users.toggle-active');
+
+        
     });
