@@ -14,6 +14,7 @@
                 @auth
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="text-sm hover:text-indigo-600">Dashboard</a>
+                        
                         <a href="{{ route('admin.users.index') }}" class="text-sm hover:text-indigo-600">Users</a>
                     @endif
                 @endauth

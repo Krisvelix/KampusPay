@@ -65,4 +65,11 @@ class AuthTest extends TestCase
             ->get('/admin/dashboard')
             ->assertOk();
     }
+
+    public function test_merchant_can_open_merchant_dashboard(): void
+{
+    $this->actingAs(User::factory()->merchant()->create())
+        ->get('/merchant/dashboard')
+        ->assertOk();
+}
 }
