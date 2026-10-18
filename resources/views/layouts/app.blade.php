@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'KampusPay')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <script src="https://cdn.tailwindcss.com"></script>
+    @endif
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen">
     <nav class="bg-white border-b">
@@ -14,8 +18,21 @@
                 @auth
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="text-sm hover:text-indigo-600">Dashboard</a>
-                        
+                        <a href="{{ route('admin.merchants.index') }}" class="text-sm hover:text-indigo-600">Verifikasi Merchant</a>
                         <a href="{{ route('admin.users.index') }}" class="text-sm hover:text-indigo-600">Users</a>
+                    @elseif (auth()->user()->isMerchant())
+                        <a href="{{ route('merchant.dashboard') }}" class="text-sm hover:text-indigo-600">Dashboard</a>
+                        @if (auth()->user()->merchant)
+                            <a href="{{ route('merchant.store.show') }}" class="text-sm hover:text-indigo-600">Toko Saya</a>
+                            @if (auth()->user()->merchant->isApproved())
+                                <a href="{{ route('merchant.products.index') }}" class="text-sm hover:text-indigo-600">Produk</a>
+                                <a href="{{ route('merchant.orders.index') }}" class="text-sm hover:text-indigo-600">Pesanan Masuk</a>
+                            @endif
+                        @else
+                            <a href="{{ route('merchant.store.create') }}" class="text-sm text-indigo-600 font-medium hover:underline">+ Buka Toko</a>
+                        @endif
+                    @elseif (auth()->user()->isCustomer())
+                        <a href="{{ route('customer.dashboard') }}" class="text-sm hover:text-indigo-600">Dashboard</a>
                     @endif
                 @endauth
             </div>
