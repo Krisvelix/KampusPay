@@ -15,7 +15,11 @@
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" class="text-sm hover:text-indigo-600">Dashboard</a>
                         
-                        <a href="{{ route('admin.users.index') }}" class="text-sm hover:text-indigo-600">Users</a>
+                                               <a href="{{ route('admin.users.index') }}" class="text-sm hover:text-indigo-600">Users</a>
+                    @elseif (auth()->user()->isCustomer())
+                        <a href="{{ route('customer.dashboard') }}" class="text-sm hover:text-indigo-600">Dashboard</a>
+                        <a href="{{ route('customer.topup.create') }}" class="text-sm hover:text-indigo-600">Top Up</a>
+                        <a href="{{ route('customer.topup.index') }}" class="text-sm hover:text-indigo-600">Riwayat Top Up</a>
                     @endif
                 @endauth
             </div>
