@@ -24,6 +24,11 @@
             </select>
             @error('role') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
+        <div id="store-field" class="{{ old('role') === 'merchant' ? '' : 'hidden' }}">
+            <label for="store_name" class="block text-sm mb-1">Nama Toko</label>
+            <input id="store_name" name="store_name" value="{{ old('store_name') }}" class="w-full border rounded-lg px-3 py-2">
+            @error('store_name') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
         <div>
             <label for="password" class="block text-sm mb-1">Password</label>
             <input id="password" type="password" name="password" required class="w-full border rounded-lg px-3 py-2">
@@ -37,4 +42,12 @@
     </form>
     <p class="text-sm mt-4">Sudah punya akun? <a href="{{ route('login') }}" class="text-indigo-600">Login</a></p>
 </div>
+
+<script>
+    const role = document.getElementById('role');
+    const storeField = document.getElementById('store-field');
+    const toggleStore = () => storeField.classList.toggle('hidden', role.value !== 'merchant');
+    role.addEventListener('change', toggleStore);
+    toggleStore();
+</script>
 @endsection
