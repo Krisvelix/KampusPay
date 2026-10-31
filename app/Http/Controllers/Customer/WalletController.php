@@ -5,64 +5,63 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Topup;
 use App\Models\Wallet;
+use App\Models\WalletMutation;
+use App\Services\WalletMutationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class WalletController extends Controller
 {
-    private function wallet(Request $request): Wallet
+    public function dashboard(Request $request): View
     {
-        return Wallet::firstOrCreate(
-            ['user_id' => $request->user()->id],
-            ['balance' => 0]
-        );
-    }
+        $user = $request->user();
 
-    public function dashboard(Request $request)
-    {
-        $wallet = $this->wallet($request);
-        $recentTopups = $request->user()->topups()->latest()->take(5)->get();
+        $wallet = $user->wallet()->firstOrCreate([], ['balance' => 0]);
+        $recentTopups = $user->topups()->latest()->limit(5)->get();
 
         return view('customer.dashboard', compact('wallet', 'recentTopups'));
     }
 
-    public function topupCreate(Request $request)
+    public function topupCreate(Request $request): View
     {
-        $wallet = $this->wallet($request);
+        $wallet = $request->user()->wallet()->firstOrCreate([], ['balance' => 0]);
 
         return view('customer.topup.create', compact('wallet'));
     }
 
-    public function topupStore(Request $request)
+    public function topupStore(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'amount' => ['required', 'integer', 'min:10000', 'max:5000000'],
-        ], [
-            'amount.required' => 'Nominal top up wajib diisi.',
-            'amount.integer' => 'Nominal harus berupa angka bulat.',
-            'amount.min' => 'Top up minimal Rp 10.000.',
-            'amount.max' => 'Top up maksimal Rp 5.000.000 per transaksi.',
         ]);
 
-        $wallet = $this->wallet($request);
+        $user = $request->user();
 
-        DB::transaction(function () use ($request, $wallet, $data) {
-            $locked = Wallet::whereKey($wallet->id)->lockForUpdate()->first();
+        DB::transaction(function () use ($user, $data) {
+            $wallet = Wallet::firstOrCreate(['user_id' => $user->id], ['balance' => 0]);
 
             Topup::create([
-                'user_id' => $request->user()->id,
+                'user_id' => $user->id,
                 'amount' => $data['amount'],
                 'status' => Topup::STATUS_SUCCESS,
             ]);
 
-            $locked->increment('balance', $data['amount']);
+            app(WalletMutationService::class)->credit(
+                $wallet,
+                $data['amount'],
+                WalletMutation::TYPE_TOPUP,
+                'Top up saldo'
+            );
         });
 
-        return redirect()->route('customer.dashboard')
-            ->with('success', 'Top up Rp '.number_format($data['amount'], 0, ',', '.').' berhasil.');
+        return redirect()
+            ->route('customer.dashboard')
+            ->with('success', 'Top up berhasil.');
     }
 
-    public function topupIndex(Request $request)
+    public function topupIndex(Request $request): View
     {
         $topups = $request->user()->topups()->latest()->paginate(10);
 

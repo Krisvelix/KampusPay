@@ -51,6 +51,16 @@ class User extends Authenticatable
         return $this->hasOne(Wallet::class);
     }
 
+    public function ensureWallet(): Wallet
+    {
+        return $this->wallet()->firstOrCreate([], ['balance' => 0]);
+    }
+
+    public function merchant(): HasOne
+    {
+        return $this->hasOne(Merchant::class);
+    }
+
     public function topups(): HasMany
     {
         return $this->hasMany(Topup::class);
