@@ -4,8 +4,8 @@
 @section('content')
 <h1 class="text-2xl font-semibold mb-4">Kelola User</h1>
 
-<form method="GET" class="flex flex-wrap gap-2 mb-4">
-    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama / email"
+<form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-wrap gap-2 mb-4 text-sm">
+    <input name="search" value="{{ request('search') }}" placeholder="Cari nama atau email"
            class="border rounded-lg px-3 py-2">
     <select name="role" class="border rounded-lg px-3 py-2">
         <option value="">Semua role</option>
@@ -13,7 +13,8 @@
             <option value="{{ $role }}" @selected(request('role') === $role)>{{ ucfirst($role) }}</option>
         @endforeach
     </select>
-    <button class="bg-indigo-600 text-white rounded-lg px-4 py-2">Filter</button>
+    <button class="rounded-lg bg-indigo-600 text-white px-4 py-2">Filter</button>
+    <a href="{{ route('admin.users.index') }}" class="px-3 py-2 text-gray-500">Reset</a>
 </form>
 
 <div class="bg-white rounded-xl shadow overflow-x-auto">
@@ -37,17 +38,18 @@
                 <td>
                     @if ($user->id !== auth()->id())
                         <form method="POST" action="{{ route('admin.users.toggle-active', $user) }}">
-                            @csrf
-                            @method('PATCH')
-                            <button class="text-indigo-600 hover:underline">
+                            @csrf @method('PATCH')
+                            <button class="{{ $user->is_active ? 'text-red-600' : 'text-green-700' }} hover:underline">
                                 {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                             </button>
                         </form>
+                    @else
+                        <span class="text-gray-400">(akunmu)</span>
                     @endif
                 </td>
             </tr>
         @empty
-            <tr><td colspan="5" class="text-center text-gray-500">Tidak ada data.</td></tr>
+            <tr><td colspan="5" class="text-center text-gray-500">Tidak ada user.</td></tr>
         @endforelse
         </tbody>
     </table>
