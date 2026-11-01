@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\OrderCancellationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use RuntimeException;
 
 class OrderController extends Controller
 {
@@ -32,10 +34,10 @@ class OrderController extends Controller
         if ($request->filled('search')) {
             $search = '%' . $request->input('search') . '%';
             $query->where(function ($q) use ($search) {
-                $q->where('order_number', 'like', $search)
+                $q->where('order_number', 'ilike', $search)
                     ->orWhereHas('customer', function ($cq) use ($search) {
-                        $cq->where('name', 'like', $search)
-                           ->orWhere('email', 'like', $search);
+                        $cq->where('name', 'ilike', $search)
+                           ->orWhere('email', 'ilike', $search);
                     });
             });
         }
@@ -66,7 +68,7 @@ class OrderController extends Controller
         return view('merchant.orders.show', compact('merchant', 'order'));
     }
 
-    public function updateStatus(Request $request, Order $order): RedirectResponse
+    public function updateStatus(Request $request, Order $order, OrderCancellationService $cancellation): RedirectResponse
     {
         $merchant = auth()->user()->merchant;
 
@@ -83,8 +85,29 @@ class OrderController extends Controller
             ])],
         ]);
 
-        $order->update(['status' => $data['status']]);
+        $target = $data['status'];
 
-        return back()->with('success', "Status pesanan #{$order->order_number} berhasil diubah menjadi " . ucfirst($order->status) . '.');
+        $transitions = [
+            Order::STATUS_PENDING => [Order::STATUS_PROCESSING, Order::STATUS_CANCELLED],
+            Order::STATUS_PROCESSING => [Order::STATUS_COMPLETED, Order::STATUS_CANCELLED],
+        ];
+
+        if (! in_array($target, $transitions[$order->status] ?? [], true)) {
+            return back()->with('error', 'Status pesanan tidak bisa diubah dari ' . ucfirst($order->status) . ' ke ' . ucfirst($target) . '.');
+        }
+
+        if ($target === Order::STATUS_CANCELLED) {
+            try {
+                $cancellation->cancel($order, [Order::STATUS_PENDING, Order::STATUS_PROCESSING]);
+            } catch (RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
+            }
+
+            return back()->with('success', "Pesanan #{$order->order_number} dibatalkan dan saldo customer dikembalikan.");
+        }
+
+        $order->update(['status' => $target]);
+
+        return back()->with('success', "Status pesanan #{$order->order_number} berhasil diubah menjadi " . ucfirst($target) . '.');
     }
 }

@@ -33,6 +33,15 @@
                         @endif
                     @elseif (auth()->user()->isCustomer())
                         <a href="{{ route('customer.dashboard') }}" class="text-sm hover:text-indigo-600">Dashboard</a>
+                        <a href="{{ route('customer.catalog.index') }}" class="text-sm hover:text-indigo-600">Katalog</a>
+                        <a href="{{ route('customer.cart.index') }}" class="text-sm hover:text-indigo-600">
+                            Keranjang
+                            @php($cartCount = auth()->user()->cartItems()->count())
+                            @if ($cartCount > 0)
+                                <span class="ml-1 rounded-full bg-indigo-600 text-white px-2 py-0.5 text-xs">{{ $cartCount }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('customer.orders.index') }}" class="text-sm hover:text-indigo-600">Pesanan Saya</a>
                         <a href="{{ route('customer.topup.create') }}" class="text-sm hover:text-indigo-600">Top Up</a>
                         <a href="{{ route('customer.topup.index') }}" class="text-sm hover:text-indigo-600">Riwayat Top Up</a>
                     @endif
