@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Merchant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -16,10 +17,17 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($accounts as [$name, $email, $role]) {
-            User::updateOrCreate(
+            $user = User::updateOrCreate(
                 ['email' => $email],
                 ['name' => $name, 'password' => 'password', 'role' => $role, 'is_active' => true],
             );
+
+            if ($role === User::ROLE_MERCHANT) {
+                Merchant::updateOrCreate(
+                    ['user_id' => $user->id],
+                    ['store_name' => 'Kantin Demo', 'status' => Merchant::STATUS_APPROVED],
+                );
+            }
         }
     }
 }

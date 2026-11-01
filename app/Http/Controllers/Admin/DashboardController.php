@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Merchant;
 use App\Models\User;
 use Illuminate\View\View;
 
@@ -11,10 +12,11 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         return view('admin.dashboard', [
-            'totalUsers' => User::count(),
-            'totalCustomers' => User::where('role', User::ROLE_CUSTOMER)->count(),
-            'totalMerchants' => User::where('role', User::ROLE_MERCHANT)->count(),
-            'inactiveUsers' => User::where('is_active', false)->count(),
+            'totalUsers'       => User::count(),
+            'totalCustomers'   => User::where('role', User::ROLE_CUSTOMER)->count(),
+            'totalMerchants'   => User::where('role', User::ROLE_MERCHANT)->count(),
+            'inactiveUsers'    => User::where('is_active', false)->count(),
+            'pendingMerchants' => Merchant::where('status', 'pending')->count(),
         ]);
     }
 }

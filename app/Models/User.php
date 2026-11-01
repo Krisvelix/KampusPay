@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +14,6 @@ use Illuminate\Notifications\Notifiable;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
@@ -51,9 +49,29 @@ class User extends Authenticatable
         return $this->hasOne(Wallet::class);
     }
 
+    public function ensureWallet(): Wallet
+    {
+        return $this->wallet()->firstOrCreate([], ['balance' => 0]);
+    }
+
+    public function merchant(): HasOne
+    {
+        return $this->hasOne(Merchant::class);
+    }
+
     public function topups(): HasMany
     {
         return $this->hasMany(Topup::class);
+    }
+
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'customer_id');
     }
 
     public function dashboardRoute(): string
