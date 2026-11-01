@@ -11,6 +11,7 @@ class WalletMutation extends Model
     public const TYPE_PAYMENT = 'payment';
     public const TYPE_TRANSFER = 'transfer';
     public const TYPE_WITHDRAWAL = 'withdrawal';
+    public const TYPE_REFUND = 'refund';
 
     public const DIRECTION_CREDIT = 'credit';
     public const DIRECTION_DEBIT = 'debit';
